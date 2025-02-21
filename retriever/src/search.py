@@ -128,6 +128,7 @@ def add_passages(data, passages, top_passages_and_scores, valid_query_idx, domai
                 {
                     "id": results_and_scores[0][c],
                     "source": domain,
+                    "origin_id": docs[c]["origin_id"] if 'origin_id' in docs[c] else None,
                     # "retrieval title": docs[c]["title"],
                     "retrieval text": docs[c]["text"],
                     "retrieval next text": next_docs[c]["text"],

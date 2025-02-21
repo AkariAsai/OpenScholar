@@ -84,6 +84,7 @@ def fast_load_jsonl_shard(args, shard_index):
                     for chunk in chunks:
                         passages.append({
                             "text": chunk,
+                            "origin_id": ex['id'] if 'id' in ex else None,
                             "id": idx,
                             "shard_id": shard_index,
                             "num_shards": num_shards,
