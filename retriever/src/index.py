@@ -33,7 +33,7 @@ import contriever.src.slurm
 from contriever.src.evaluation import calculate_matches
 import contriever.src.normalize_text
 
-from src.data import fast_load_jsonl_shard
+from src.data import fast_load_jsonl_shard, load_jsonl
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
@@ -388,7 +388,13 @@ def get_index_passages_and_id_map(cfg, index_shard_ids=None):
     passage_id_map = {}
     offset = 0
     for shard_id in index_shard_ids:
-        shard_passages = fast_load_jsonl_shard(cfg.datastore.embedding, shard_id)
+        # shard_passages = fast_load_jsonl_shard(cfg.datastore.embedding, shard_id)
+        shard_passages = load_jsonl(
+            os.path.join(
+                cfg.datastore.embedding.passages_dir,
+                f"raw_passages-{shard_id}-of-{cfg.datastore.embedding.num_shards}.jsonl"
+            )
+        )
         shard_id_map = {str(x["id"]+offset): x for x in shard_passages}
         
         offset += len(shard_passages)
