@@ -138,7 +138,35 @@ Below, we provide the detailed of configurations.
 - `task_name`: specify the task names when you run the single paper tasks. For SciFact, PubmedQA and QASA, the corresponding task names are `claim_full`, `boolean_question_full` and `single_qa`, respectively. 
 
 ## Training
-We train our [OpenScholar-8B](https://huggingface.co/OpenScholar/OpenScholar_Llama-3.1-8B) using our [OpenScholar/OS_Train_Data]([https://huggingface.co/OpenScholar/OpenScholar_Train_Data](https://huggingface.co/datasets/OpenScholar/OS_Train_Data)) data, which consists of 13k instruction-tuning data. We use our modified version of [torchtune]() to train our 8B model using 8*A100. 
+
+### Embedding model training
+- We trained our embedding model using [peS2o](https://huggingface.co/datasets/allenai/peS2o/tree/main/data/v2), which is used to form the OpenScholar Datastore.
+- We used the [Contriever](https://github.com/facebookresearch/contriever) code base to continue pre-training [contriever (base)](https://huggingface.co/facebook/contriever), using [the training script](https://github.com/facebookresearch/contriever/blob/main/example_scripts/contriever.sh). 
+
+### Reranker model training 
+- We trained our reranker model using [FlagEmbeddings](https://github.com/FlagOpen/FlagEmbedding/tree/lm-cocktail/examples/reranker).
+- We formatted our reranker training data, following [the original repo instructions](https://github.com/FlagOpen/FlagEmbedding/blob/lm-cocktail/examples/reranker/README.md), and then trained [BGE reranker large](https://huggingface.co/BAAI/bge-reranker-large) with torch tune.
+
+```
+torchrun --nproc_per_node {number of gpus} \
+-m FlagEmbedding.reranker.run \
+--output_dir {path to save model} \
+--model_name_or_path BAAI/bge-reranker-base \
+--train_data PATH_TO_TRAIN_DATA \
+--learning_rate 6e-5 \
+--fp16 \
+--num_train_epochs 5 \
+--per_device_train_batch_size {batch size; set 1 for toy data} \
+--gradient_accumulation_steps 4 \
+--dataloader_drop_last True \
+--train_group_size 16 \
+--max_len 512 \
+--weight_decay 0.01 \
+--logging_steps 10 
+```
+
+### Generator LM training 
+- We trained our [OpenScholar-8B](https://huggingface.co/OpenScholar/OpenScholar_Llama-3.1-8B) using our [OpenScholar/OS_Train_Data]([https://huggingface.co/OpenScholar/OpenScholar_Train_Data](https://huggingface.co/datasets/OpenScholar/OS_Train_Data)) data, which consists of 13k instruction-tuning data. We use our modified version of [torchtune](https://github.com/pytorch/torchtune) to train our 8B model using 8*A100. 
 
 See mode detailed instructions for setting up the training in [train/](train)
 
